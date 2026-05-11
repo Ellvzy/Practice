@@ -45,7 +45,7 @@ int main()
     FILE *file = fopen("test.txt", "r");
     if (!file)
     {
-        printf("Не удалось открыть файл\n");
+        printf("Не удалось открыть файл");
         return 1;
     }
 
