@@ -22,7 +22,7 @@
 using namespace std;
 
 // Единственная глобальная константа для хранения пути к файлу данных
-const char FILENAME[] = "test.txt";
+const char FILENAME[] = "tests\\test_invalid_8.txt";
 
 // Константы ограничений: максимальная длина строки и лимит записей в массиве
 const int MAX_STR = 128;
