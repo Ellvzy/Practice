@@ -1,23 +1,23 @@
 /***************************************************************************
-* Кафедра №304, 1 курс                                                     *
-* Проектная деятельность по программированию                               *
-* Project Type  : Command-Line Tool                                        *
-* Project Name  : AircraftControl                                          *
-* File Name     : main.cpp                                                 *
-* Language      : C++, UTF-8                                               *
-* Programmer    : Лобачева Елизавета                                       *
-* Created       : 16.05.2026                                               *
-* Last Revision : 03.06.2026                                               *
-* Comment(s)    : Вариант 17. Индексная сортировка линейным методом        *
-* по возрастанию бортового номера. Ограничение                             *
-* на вложенность функций: не более 1 уровня.                               *
-* Добавлено ограничение на длину рейса: до 9 цифр.                         *
-***************************************************************************/
+ * Кафедра №304, 1 курс                                                     *
+ * Проектная деятельность по программированию                               *
+ * Project Type  : Command-Line Tool                                        *
+ * Project Name  : AircraftControl                                          *
+ * File Name     : main.cpp                                                 *
+ * Language      : C++, UTF-8                                               *
+ * Programmer    : Лобачева Елизавета                                       *
+ * Created       : 16.05.2026                                               *
+ * Last Revision : 03.06.2026                                               *
+ * Comment(s)    : Вариант 17. Индексная сортировка линейным методом        *
+ * по возрастанию бортового номера. Ограничение                             *
+ * на вложенность функций: не более 1 уровня.                               *
+ * Добавлено ограничение на длину рейса: до 9 цифр.                         *
+ ***************************************************************************/
 
 #include <iostream>
 #include <fstream>
 #ifdef _WIN32
-    #include <windows.h>
+#include <windows.h>
 #endif
 using namespace std;
 
@@ -29,7 +29,8 @@ const int MAX_STR = 128;
 const int MAX_RECORDS = 100;
 
 // Структура данных, описывающая объект "Самолет"
-struct Aircraft {
+struct Aircraft
+{
     char tail_number[MAX_STR];   // Буфер для бортового номера (Формат: Б-хххх)
     int flight_number;           // Переменная для числовой части номера рейса
     char brand[MAX_STR];         // Буфер для хранения марки (или города) ЛА
@@ -40,36 +41,38 @@ struct Aircraft {
 };
 
 // Посимвольное копирование строки из источника в приемник
-void StringCopy(char* dest, const char* src);
+void StringCopy(char *dest, const char *src);
 
 // Посимвольное сравнение двух строк
 // Возвращает: 0, если строки идентичны; разность кодов символов, если они отличаются
-int StringCompare(const char* s1, const char* s2);
+int StringCompare(const char *s1, const char *s2);
 
 // Подсчет реально видимых символов в UTF-8 строке
-int Utf8Length(const char* str);
+int Utf8Length(const char *str);
 
 // Проверка бортового номера на строгое соответствие формату Б-хххх
-bool CheckTailNumber(const char* tail);
+bool CheckTailNumber(const char *tail);
 
 // Проверка префикса "РЕЙС" и перевод его цифровой части (до 9 цифр) из текста в тип int
-bool CheckAndParseFlight(const char* flight_str, int& num);
+bool CheckAndParseFlight(const char *flight_str, int &num);
 
 // Проверка формата времени ХХ:УУ и перевод значений в часы и минуты с контролем границ (0-23, 0-59)
-bool ParseAndCheckTime(const char* time_str, int& h, int& m);
+bool ParseAndCheckTime(const char *time_str, int &h, int &m);
 
 // Индексная сортировка методом выбора (линейным) по возрастанию бортового номера
-void IndexSort(Aircraft* arr, int count, int* idx_arr);
+void IndexSort(Aircraft *arr, int count, int *idx_arr);
 
-//Начало программы
-int main() {
-    #ifdef _WIN32
-        SetConsoleOutputCP(CP_UTF8);
-    #endif
+// Начало программы
+int main()
+{
+#ifdef _WIN32
+    SetConsoleOutputCP(CP_UTF8);
+#endif
     // Открываем файл для чтения данных с помощью потока ifstream
     ifstream file(FILENAME);
     // Проверяем, удалось ли операционной системе открыть файл
-    if (!file.is_open()) {
+    if (!file.is_open())
+    {
         cout << "Ошибка: Не удалось открыть файл " << FILENAME << endl;
         return 1; // Завершаем программу с кодом ошибки 1
     }
@@ -89,15 +92,17 @@ int main() {
     int line_num = 0;
 
     // Цикл работает, пока из файла успешно читаются строки и пока мы не превысили лимит в 100 записей
-    while (file.getline(buffer, MAX_STR) && count < MAX_RECORDS) {
+    while (file.getline(buffer, MAX_STR) && count < MAX_RECORDS)
+    {
         line_num++; // Увеличиваем счетчик обработанных строк файла
-        
+
         // Защита от пустых строк: если строка пустая или содержит только символы переноса, мы её пропускаем
-        if (buffer[0] == '\0' || buffer[0] == '\r' || buffer[0] == '\n') continue;
+        if (buffer[0] == '\0' || buffer[0] == '\r' || buffer[0] == '\n')
+            continue;
 
         // Делаем резервную копию строки в структуру
         StringCopy(data[count].original_line, buffer);
-        
+
         // Изначально помечаем запись как ошибочную. Флаг станет true только тогда, когда запись успешно пройдет абсолютно все проверки.
         data[count].is_valid = false;
 
@@ -111,55 +116,67 @@ int main() {
         int fields = sscanf(buffer, "%s %s %s %s", t_tail, t_flight, t_brand, t_time);
 
         // Проверяем синтаксическое правило: в строке должно быть строго 4 слова через пробел
-        if (fields != 4) {
+        if (fields != 4)
+        {
             cout << "[Строка " << line_num << "] Ошибка: Неполные данные в строке." << endl;
-        } else {
+        }
+        else
+        {
             // Запускаем атомарные проверки форматов для каждого поля отдельно
-            bool v_tail = CheckTailNumber(t_tail);         // Проверка бортового номера Б-хххх
-            int f_num = 0;                                 // Переменная, куда запишется сконвертированный номер рейса
+            bool v_tail = CheckTailNumber(t_tail);                // Проверка бортового номера Б-хххх
+            int f_num = 0;                                        // Переменная, куда запишется сконвертированный номер рейса
             bool v_flight = CheckAndParseFlight(t_flight, f_num); // Проверка префикса РЕЙС и лимита в 9 цифр
-            int h = 0, m = 0;                              // Переменные для хранения часов и минут
-            bool v_time = ParseAndCheckTime(t_time, h, m); // Проверка маски времени ХХ:УУ и корректности интервалов
+            int h = 0, m = 0;                                     // Переменные для хранения часов и минут
+            bool v_time = ParseAndCheckTime(t_time, h, m);        // Проверка маски времени ХХ:УУ и корректности интервалов
 
             // Если проверка бортового номера вернула false - выводим сообщение об ошибке
-            if (!v_tail) {
+            if (!v_tail)
+            {
                 cout << "[Строка " << line_num << "] Ошибка: Неверный формат Бортового номера (Ожидалось Б-хххх)." << endl;
             }
             // Если проверка рейса вернула false (неверный текст или цифр больше 9) - сообщаем об ошибке формата
-            else if (!v_flight) {
+            else if (!v_flight)
+            {
                 cout << "[Строка " << line_num << "] Ошибка: Неверный формат номера Рейса (Ожидалось РЕЙС и от 1 до 9 цифр)." << endl;
             }
             // Если проверка времени вернула false - информируем о синтаксической ошибке или выходе из диапазона 00:00-23:59
-            else if (!v_time) {
+            else if (!v_time)
+            {
                 cout << "[Строка " << line_num << "] Ошибка: Неверный формат Времени или выход за границы (ХХ:УУ)." << endl;
             }
-            else {
+            else
+            {
                 // Сюда мы попадаем, если синтаксис строки идеален. Заводим локальный флаг смысловой корректности
                 bool semantic_ok = true;
-                
+
                 // Бежим циклом по всем ранее прочитанным и уже сохраненным записям, чтобы найти конфликты
-                for (int i = 0; i < count; i++) {
+                for (int i = 0; i < count; i++)
+                {
                     // Если старая запись сама по себе ошибочна, мы её игнорируем и не сравниваем с ней текущую
-                    if (!data[i].is_valid) continue;
+                    if (!data[i].is_valid)
+                        continue;
 
                     // Один и тот же физический самолет не может регистрироваться в одну и ту же минуту дважды
                     // Вызов StringCompare (внутри этой функции других вызовов нет)
-                    if (StringCompare(data[i].tail_number, t_tail) == 0 && data[i].hour == h && data[i].minute == m) {
+                    if (StringCompare(data[i].tail_number, t_tail) == 0 && data[i].hour == h && data[i].minute == m)
+                    {
                         cout << "[Строка " << line_num << "] Смысловая ошибка: Дубликат бортового номера на одно время." << endl;
                         semantic_ok = false; // Помечаем, что смысловая проверка провалена
-                        break;              // Прерываем цикл проверок, так как ошибка уже найдена
+                        break;               // Прерываем цикл проверок, так как ошибка уже найдена
                     }
-                    
+
                     // Два разных самолета не могут выполнять один и тот же рейс в одну и ту же минуту
-                    if (data[i].flight_number == f_num && data[i].hour == h && data[i].minute == m) {
+                    if (data[i].flight_number == f_num && data[i].hour == h && data[i].minute == m)
+                    {
                         cout << "[Строка " << line_num << "] Смысловая ошибка: Дубликат номера рейса на одно время." << endl;
                         semantic_ok = false; // Помечаем, что смысловая проверка провалена
-                        break;              // Выходим из цикла сравнений
+                        break;               // Выходим из цикла сравнений
                     }
                 }
 
                 // Если строка успешно прошла и синтаксический, и смысловой контроль:
-                if (semantic_ok) {
+                if (semantic_ok)
+                {
                     // Переносим проверенные данные из временных буферов в структуру текущего самолета
                     StringCopy(data[count].tail_number, t_tail);
                     StringCopy(data[count].brand, t_brand);
@@ -171,12 +188,13 @@ int main() {
             }
         }
 
-        // Заполняем индексный массив начальными значениями 
+        // Заполняем индексный массив начальными значениями
         idx_arr[count] = count;
         count++; // Увеличиваем счетчик обработанных элементов массива структур
     }
     file.close(); // Закрываем файл, так как чтение полностью завершено
-    cout << "--------------------------------------" << endl << endl;
+    cout << "--------------------------------------" << endl
+         << endl;
 
     // Вызываем сортировку
     IndexSort(data, count, idx_arr);
@@ -187,22 +205,26 @@ int main() {
     cout << "==========================================================================" << endl;
 
     // Итерируемся по массиву индексов, который теперь отсортирован в нужном нам порядке
-    for (int i = 0; i < count; i++) {
+    for (int i = 0; i < count; i++)
+    {
         // Создаем ссылку на структуру самолета, на которую указывает текущий отсортированный индекс
-        Aircraft& ac = data[idx_arr[i]];
+        Aircraft &ac = data[idx_arr[i]];
 
         // Выводим порядковый номер строки в таблице с красивым ведущим нулем
         cout << "| ";
-        if (i + 1 < 10) cout << "0";
+        if (i + 1 < 10)
+            cout << "0";
         cout << (i + 1) << " | ";
 
         // Если запись полностью валидна, выводим её структурированные поля
-        if (ac.is_valid) {
+        if (ac.is_valid)
+        {
             cout << ac.tail_number; // Печатаем бортовой номер
-            
+
             // Считаем реальную длину UTF-8 строки для выравнивания правого края
             int tail_spaces = 14 - Utf8Length(ac.tail_number);
-            for (int k = 0; k < tail_spaces; k++) cout << " "; // Добиваем пробелами до фиксированной ширины столбца
+            for (int k = 0; k < tail_spaces; k++)
+                cout << " "; // Добиваем пробелами до фиксированной ширины столбца
             cout << " | ";
 
             // Выводим номер рейса
@@ -210,45 +232,57 @@ int main() {
             // Динамически рассчитываем длину получившегося числа, чтобы не поплыли столбцы таблицы
             int temp_num = ac.flight_number;
             int num_len = (temp_num == 0) ? 1 : 0;
-            while (temp_num > 0) { num_len++; temp_num /= 10; }
+            while (temp_num > 0)
+            {
+                num_len++;
+                temp_num /= 10;
+            }
             int flight_spaces = 11 - (4 + num_len); // Вычисляем остаток пробелов
-            for (int k = 0; k < flight_spaces; k++) cout << " ";
+            for (int k = 0; k < flight_spaces; k++)
+                cout << " ";
             cout << " | ";
 
             // Выводим Марку летательного аппарата с UTF-8 выравниванием
             cout << ac.brand;
             int brand_spaces = 12 - Utf8Length(ac.brand);
-            for (int k = 0; k < brand_spaces; k++) cout << " ";
+            for (int k = 0; k < brand_spaces; k++)
+                cout << " ";
             cout << " | ";
 
             // Выводим время входа в зону
-            if (ac.hour < 10) cout << "0";
+            if (ac.hour < 10)
+                cout << "0";
             cout << ac.hour << ":";
-            if (ac.minute < 10) cout << "0";
+            if (ac.minute < 10)
+                cout << "0";
             cout << ac.minute;
             cout << "       | ОК    |" << endl;
-        } 
+        }
         // Если запись была помечена как ошибочная, мы выводим сохраненный текстовый оригинал строки
-        else {
+        else
+        {
             cout << "Некорректно: ";
             cout << ac.original_line; // Выводим сырую строку из резервной копии
             // Рассчитываем ширину строки, чтобы правая рамка таблицы `| ОШИБКА |` осталась ровной
-            int line_len = Utf8Length(ac.original_line) + 13; 
+            int line_len = Utf8Length(ac.original_line) + 13;
             int remaining = 62 - line_len;
-            for (int k = 0; k < remaining; k++) cout << " ";
+            for (int k = 0; k < remaining; k++)
+                cout << " ";
             cout << " | ОШИБКА |" << endl;
         }
     }
     cout << "==========================================================================" << endl;
 
     return 0; // Успешное завершение работы программы
-}
+} // Конец программы
 
 // Функция копирования текстовых массивов
-void StringCopy(char* dest, const char* src) {
+void StringCopy(char *dest, const char *src)
+{
     int i = 0;
     // Копируем символы поочередно, пока не встретим маркер конца строки '\0'
-    while (src[i] != '\0') {
+    while (src[i] != '\0')
+    {
         dest[i] = src[i];
         i++;
     }
@@ -256,11 +290,14 @@ void StringCopy(char* dest, const char* src) {
 }
 
 // Функция лексикографического сравнения строк
-int StringCompare(const char* s1, const char* s2) {
+int StringCompare(const char *s1, const char *s2)
+{
     int i = 0;
     // Бежим по строкам, пока символы равны и ни одна строка не закончилась
-    while (s1[i] != '\0' && s2[i] != '\0') {
-        if (s1[i] != s2[i]) {
+    while (s1[i] != '\0' && s2[i] != '\0')
+    {
+        if (s1[i] != s2[i])
+        {
             // Если нашли различие, возвращаем разность кодов символов
             return (unsigned char)s1[i] - (unsigned char)s2[i];
         }
@@ -271,11 +308,14 @@ int StringCompare(const char* s1, const char* s2) {
 }
 
 // Функция подсчета символов в UTF-8 для Linux-систем
-int Utf8Length(const char* str) {
+int Utf8Length(const char *str)
+{
     int len = 0;
     int i = 0;
-    while (str[i] != '\0') {
-        if (((unsigned char)str[i] & 0xC0) != 0x80) {
+    while (str[i] != '\0')
+    {
+        if (((unsigned char)str[i] & 0xC0) != 0x80)
+        {
             len++;
         }
         i++;
@@ -284,40 +324,52 @@ int Utf8Length(const char* str) {
 }
 
 // Функция входного контроля бортового номера
-bool CheckTailNumber(const char* tail) {
-    if ((unsigned char)tail[0] != 0xD0 || (unsigned char)tail[1] != 0x91) return false;
+bool CheckTailNumber(const char *tail)
+{
+    if ((unsigned char)tail[0] != 0xD0 || (unsigned char)tail[1] != 0x91)
+        return false;
     // Третьим символом по маске обязательно должен идти дефис
-    if (tail[2] != '-') return false;
+    if (tail[2] != '-')
+        return false;
 
     // Проверяем, что следующие 4 символа являются строго цифрами от 0 до 9
-    for (int i = 3; i < 7; i++) {
-        if (tail[i] < '0' || tail[i] > '9') return false;
+    for (int i = 3; i < 7; i++)
+    {
+        if (tail[i] < '0' || tail[i] > '9')
+            return false;
     }
     // Строка должна завершаться строго после 4-й цифры . Если там есть лишние знаки - формат неверен
     return tail[7] == '\0';
 }
 
 // Функция контроля префикса "РЕЙС" и извлечения числа (до 9 цифр)
-bool CheckAndParseFlight(const char* flight_str, int& num) {
+bool CheckAndParseFlight(const char *flight_str, int &num)
+{
     // Побайтово проверяем слово "РЕЙС" в кодировке UTF-8. Каждая русская буква занимает по 2 байта (итого 8 байт)
     unsigned char prefix[] = {0xD0, 0xA0, 0xD0, 0x95, 0xD0, 0x99, 0xD0, 0xA1};
-    for (int i = 0; i < 8; i++) {
-        if ((unsigned char)flight_str[i] != prefix[i]) return false; // Если хоть один байт не совпал - префикс неверный
+    for (int i = 0; i < 8; i++)
+    {
+        if ((unsigned char)flight_str[i] != prefix[i])
+            return false; // Если хоть один байт не совпал - префикс неверный
     }
 
     int i = 8; // Смещение. Числовая часть должна начинаться строго с 8-го байта строки
-    if (flight_str[i] == '\0') return false; // Если цифр после слова "РЕЙС" вообще нет - это синтаксическая ошибка
+    if (flight_str[i] == '\0')
+        return false; // Если цифр после слова "РЕЙС" вообще нет - это синтаксическая ошибка
 
-    num = 0; // Обнуляем число перед конвертацией
+    num = 0;             // Обнуляем число перед конвертацией
     int digit_count = 0; // Локальный счетчик прочитанных цифр для выполнения нового ограничения
 
     // Алгоритм перевода подстроки с цифрами в целочисленный тип int
-    while (flight_str[i] != '\0') {
-        if (flight_str[i] < '0' || flight_str[i] > '9') return false; // Если среди цифр буква - ошибка
-        
+    while (flight_str[i] != '\0')
+    {
+        if (flight_str[i] < '0' || flight_str[i] > '9')
+            return false; // Если среди цифр буква - ошибка
+
         digit_count++;
-        if (digit_count > 9) return false; // Если цифр больше 9, возвращаем ошибку формата
-        
+        if (digit_count > 9)
+            return false; // Если цифр больше 9, возвращаем ошибку формата
+
         num = num * 10 + (flight_str[i] - '0'); // Сдвигаем разряд числа влево и добавляем новую цифру
         i++;
     }
@@ -325,13 +377,20 @@ bool CheckAndParseFlight(const char* flight_str, int& num) {
 }
 
 // Функция парсинга и логической проверки времени
-bool ParseAndCheckTime(const char* time_str, int& h, int& m) {
-    if (time_str[0] < '0' || time_str[0] > '9') return false; // Первая цифра часов
-    if (time_str[1] < '0' || time_str[1] > '9') return false; // Вторая цифра часов
-    if (time_str[2] != ':') return false;                     // Разделитель-двоеточие
-    if (time_str[3] < '0' || time_str[3] > '9') return false; // Первая цифра минут
-    if (time_str[4] < '0' || time_str[4] > '9') return false; // Вторая цифра минут
-    if (time_str[5] != '\0') return false;                    // Контроль длины: строка должна прерываться сразу после минут
+bool ParseAndCheckTime(const char *time_str, int &h, int &m)
+{
+    if (time_str[0] < '0' || time_str[0] > '9')
+        return false; // Первая цифра часов
+    if (time_str[1] < '0' || time_str[1] > '9')
+        return false; // Вторая цифра часов
+    if (time_str[2] != ':')
+        return false; // Разделитель-двоеточие
+    if (time_str[3] < '0' || time_str[3] > '9')
+        return false; // Первая цифра минут
+    if (time_str[4] < '0' || time_str[4] > '9')
+        return false; // Вторая цифра минут
+    if (time_str[5] != '\0')
+        return false; // Контроль длины: строка должна прерываться сразу после минут
 
     // Высчитываем математическое значение часов и минут из символьных кодов
     h = (time_str[0] - '0') * 10 + (time_str[1] - '0');
@@ -342,34 +401,40 @@ bool ParseAndCheckTime(const char* time_str, int& h, int& m) {
 }
 
 // Функция сортировки методом выбора (работает только с массивом индексов idx_arr)
-void IndexSort(Aircraft* arr, int count, int* idx_arr) {
+void IndexSort(Aircraft *arr, int count, int *idx_arr)
+{
     // Внешний цикл линейного алгоритма выбора
-    for (int i = 0; i < count - 1; i++) {
+    for (int i = 0; i < count - 1; i++)
+    {
         int min_idx = i; // Предполагаем, что текущий элемент является минимальным
-        
+
         // Внутренний цикл ищет элемент для перестановки среди оставшейся неотсортированной части массива
-        for (int j = i + 1; j < count; j++) {
+        for (int j = i + 1; j < count; j++)
+        {
             // Извлекаем флаги валидности для сравниваемых элементов
             bool v1 = arr[idx_arr[j]].is_valid;
             bool v2 = arr[idx_arr[min_idx]].is_valid;
 
             // Если элемент 'j' корректный , а 'min_idx' содержит ошибку  - мы обязаны переставить их местами, чтобы поднять корректную запись вверх таблицы.
-            if (v1 && !v2) {
+            if (v1 && !v2)
+            {
                 min_idx = j;
-            } 
+            }
             // Если обе записи валидны , мы сравниваем их содержательную часть - текстовые строки бортовых номеров по возрастанию
-            else if (v1 && v2) {
+            else if (v1 && v2)
+            {
                 // Вызываем StringCompare для лексикографической оценки текстовых полей
-                if (StringCompare(arr[idx_arr[j]].tail_number, arr[idx_arr[min_idx]].tail_number) < 0) {
+                if (StringCompare(arr[idx_arr[j]].tail_number, arr[idx_arr[min_idx]].tail_number) < 0)
+                {
                     min_idx = j; // Запоминаем новый наилучший индекс, так как строка 'j' идет по алфавиту раньше
                 }
             }
             // Если обе записи содержат ошибки , мы ничего не предпринимаем, благодаря чему некорректные строки остаются внизу таблицы ровно в том порядке, в каком читались.
         }
-        
+
         // Осуществляем перестановку значений внутри индексной карты
         int temp = idx_arr[i];
         idx_arr[i] = idx_arr[min_idx];
         idx_arr[min_idx] = temp;
     }
-}//Конец программы
+}
